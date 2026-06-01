@@ -2,15 +2,38 @@
 .stack 100h
 
 .data
-     intro           DB '-------WELLCOME to SUPER SHOP-------$'
-     instructions    DB 'Select categories to view product$'
-     select_category DB 'Select Category: $'
-     invalid_input   DB 'Invalid Input || Try again!!$'
-     cat1            DB 'SNACKS$'
-     cat2            DB 'VEGETABLES$'
-     cat3            DB 'FRUITES$'
-     catPtrs         DW OFFSET cat1, OFFSET cat2, OFFSET cat3
-     num_of_category DB 3
+     intro           DB      '-------WELLCOME to SUPER SHOP-------$'
+     instructions    DB      'Select categories to view product$'
+     selected        DB      'Selected : $'
+     select_category DB      'Select Category: $'
+     invalid_input   DB      'Invalid Input || Try again!!$'
+     cat1            DB      'SNACKS$'
+     cat2            DB      'VEGETABLES$'
+     cat3            DB      'FRUITES$'
+     catPtrs         DW      OFFSET cat1, OFFSET cat2, OFFSET cat3
+     num_of_category DB      3
+                         ; Product name labels (dollar-terminated)
+     fruit1_name DB 'Mango$'
+     fruit2_name DB 'Banana$'
+     fruit3_name DB 'Lichi$'
+
+     veg1_name   DB 'Salad$'
+     veg2_name   DB 'Lemon$'
+     veg3_name   DB 'Broccoli$'
+
+     snack1_name DB 'Dark Chocolate$'
+     snack2_name DB 'Cold Drink$'
+     snack3_name DB 'French Fry$'
+
+     ; Product tables: pairs of WORDs: OFFSET name, price
+     fruit_table DW OFFSET fruit1_name, 100, OFFSET fruit2_name, 200, OFFSET fruit3_name, 350
+     veg_table   DW OFFSET veg1_name, 250, OFFSET veg2_name, 200, OFFSET veg3_name, 350
+     snack_table DW OFFSET snack1_name, 550, OFFSET snack2_name, 200, OFFSET snack3_name, 350
+
+     ; Map categories to their product tables
+     product_list DW OFFSET snack_table, OFFSET veg_table, OFFSET fruit_table
+     num_of_products DB 3
+
 
 
 .code
@@ -99,6 +122,8 @@ main proc
                             jmp  select_category_input
      exit_input:
                             mov  bl, [num_of_category]
+                            cmp  dl, 1
+                            jl   invalid_character
                             cmp  dl, bl
                             jle  valid_category
                             mov  si, OFFSET invalid_input
@@ -107,6 +132,53 @@ main proc
                             jmp  select_category_input
 
      valid_category:
+                            mov  bl, dl
+                            mov  si, offset selected
+                            call print_string
+                            mov  si, offset catPtrs
+                            dec  bl
+                            mov  bh, 2
+                            mov  al, bl
+                            mul  bh
+                            mov  ah,0
+                            add  si, ax
+                            mov  si, [si]
+                            call print_string
+
+                            call next_line
+                         ;    mov ah, 02h
+                         ;    mov dl, bl
+                         ;    add dl, '0'
+                         ;    int 21h
+                         mov bh,2
+                         mov al, bl
+                         mul bh
+                         
+                         mov ah,0
+                         mov si, offset product_list
+                         add si, ax
+                         mov di, [si]
+                         mov cl, [num_of_products]
+                         mov bh, 1
+                         l3:
+                         mov ah, 02h
+                         mov dl, bh
+                         add dl, '0'
+                         int 21h
+                         mov ah, 02h
+                         mov dl, '.'
+                         int 21h
+                         mov ah, 02h
+                         mov dl, ' '
+                         int 21h
+                         inc bh
+
+                         mov si, [di]
+                         call print_string
+                         call next_line
+                         add di, 4
+                         LOOP l3
+
 
      ex:
                             MOV  AH, 4Ch
