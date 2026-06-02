@@ -6,7 +6,10 @@
      instructions    DB 'Select categories to view product$'
      selected        DB 'Selected : $'
      select_category DB 'Select Category: $'
+     select_product DB 'Select Product: $'
      invalid_input   DB 'Invalid Input || Try again!!$'
+     product_price   DB ' - Price: $'
+     
      cat1            DB 'SNACKS$'
      cat2            DB 'VEGETABLES$'
      cat3            DB 'FRUITES$'
@@ -34,8 +37,12 @@
      product_list    DW OFFSET snack_table, OFFSET veg_table, OFFSET fruit_table
      num_of_products DB 3
 
+     total_spend DW 0
+     selected_category DB ?
+     selected_product DB ?
 
-     product_price   DB ' - Price: $'
+
+
 
 
 .code
@@ -127,27 +134,27 @@ main proc
                             mov  ah, 01h
                             int  21h
                             cmp  al, 0Dh                        ; if pressed enter, then exit input
-                            je   exit_input
+                            je   exit_input_category
                             cmp  al, '0'
-                            jl   invalid_character
+                            jl   invalid_character_category
                             cmp  al, '9'
-                            jg   invalid_character
+                            jg   invalid_character_category
                             mov  bh, al
                             sub  bh, 30h
                             mov  al, dl
                             mul  bl
                             add  dl, bh                         ; input stored in dl as Hex
                             LOOP l2
-                            jmp  exit_input
-     invalid_character:                                    ; Restart input if the caracter is invalid
+                            jmp  exit_input_category
+     invalid_character_category:                                    ; Restart input if the caracter is invalid
                             mov  si, OFFSET invalid_input
                             call print_string
                             call next_line
                             jmp  select_category_input
-     exit_input:
+     exit_input_category:
                             mov  bl, [num_of_category]
                             cmp  dl, 1
-                            jl   invalid_character
+                            jl   invalid_character_category
                             cmp  dl, bl
                             jle  valid_category
                             mov  si, OFFSET invalid_input
@@ -157,6 +164,7 @@ main proc
 
      valid_category:
                             mov  bl, dl
+                            mov selected_category, bl
                             mov  si, offset selected
                             call print_string
                             mov  si, offset catPtrs
@@ -180,7 +188,7 @@ main proc
                            mov ch,0
                             mov   cl, [num_of_products]
                             mov  bh, 1
-     l3:
+     display_products:
                             mov  ah, 02h
                             mov  dl, bh
                             add  dl, '0'
@@ -192,7 +200,7 @@ main proc
                             mov  dl, ' '
                             int  21h
                             inc  bh
-
+                           
                             mov  si, [di]
                             call print_string
 
@@ -202,13 +210,61 @@ main proc
 
                             add  di,2
                             mov  ax, [di]
+                            push bx
                             call display_number
-
+                            pop bx
 
 
                             call next_line
                             add  di, 2
+                            LOOP display_products
+
+                            ; take input
+     select_product_input:
+                            mov  si, OFFSET select_product
+                            call print_string
+                            mov  cx,3
+                            mov  dl,0
+                            mov  al,0
+                            mov  bl,10
+     l3:
+                            mov  ah, 01h
+                            int  21h
+                            cmp  al, 0Dh                        ; if pressed enter, then exit input
+                            je   exit_input_product
+                            cmp  al, '0'
+                            jl   invalid_character_product
+                            cmp  al, '9'
+                            jg   invalid_character_product
+                            mov  bh, al
+                            sub  bh, 30h
+                            mov  al, dl
+                            mul  bl
+                            add  dl, bh                         ; input stored in dl as Hex
                             LOOP l3
+                            jmp  exit_input_product
+     invalid_character_product:                                    ; Restart input if the caracter is invalid
+                            mov  si, OFFSET invalid_input
+                            call print_string
+                            call next_line
+                            jmp  select_product_input
+     exit_input_product:
+                            mov  bl, [num_of_category]
+                            cmp  dl, 1
+                            jl   invalid_character_product
+                            cmp  dl, bl
+                            jle  valid_product
+                            mov  si, OFFSET invalid_input
+                            call print_string
+                            call next_line
+                            jmp  select_product_input
+      valid_product:
+                            mov  bl, dl
+                            mov selected_category, bl
+                            mov dh,0
+                            mov ah, 02
+                            add dl,'0'
+                            int 21h
 
 
      ex:
