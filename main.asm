@@ -7,8 +7,12 @@
      selected        DB 'Selected : $'
      select_category DB 'Select Category: $'
      select_product DB 'Select Product: $'
+     select_quantity DB 'Select Quantity: $'
+     product_msg DB 'Product - $'
+     quantity_msg DB '|| Quantity - $'
      invalid_input   DB 'Invalid Input || Try again!!$'
      product_price   DB ' - Price: $'
+     total_price_msg DB 'Total Price - $'
      
      cat1            DB 'SNACKS$'
      cat2            DB 'VEGETABLES$'
@@ -40,6 +44,9 @@
      total_spend DW 0
      selected_category DB ?
      selected_product DB ?
+     selected_product_name DW ?
+     selected_product_price DW ?
+     quantity DW 0
 
 
 
@@ -143,7 +150,8 @@ main proc
                             sub  bh, 30h
                             mov  al, dl
                             mul  bl
-                            add  dl, bh                         ; input stored in dl as Hex
+                            add  al, bh
+                            mov  dl, al                         ; input stored in dl as decimal value
                             LOOP l2
                             jmp  exit_input_category
      invalid_character_category:                                    ; Restart input if the caracter is invalid
@@ -240,7 +248,8 @@ main proc
                             sub  bh, 30h
                             mov  al, dl
                             mul  bl
-                            add  dl, bh                         ; input stored in dl as Hex
+                            add  al, bh
+                            mov  dl, al                         ; input stored in dl as decimal value
                             LOOP l3
                             jmp  exit_input_product
      invalid_character_product:                                    ; Restart input if the caracter is invalid
@@ -259,12 +268,94 @@ main proc
                             call next_line
                             jmp  select_product_input
       valid_product:
-                            mov  bl, dl
-                            mov selected_category, bl
-                            mov dh,0
-                            mov ah, 02
-                            add dl,'0'
-                            int 21h
+                            mov selected_product, dl
+                            mov bl,2
+                            mov al, [selected_category]
+                            dec al
+                            mov ah,0
+                            mul bl
+                            mov si, OFFSET product_list
+                            add si, ax
+                            mov si,[si]
+                            mov bl,4
+                            mov al, [selected_product]
+                            dec al
+                            mov ah,0
+                            mul bl
+                            add si, ax
+                            push si
+                            mov si,[si]
+                            mov selected_product_name, si
+                            call print_string
+                            mov si, OFFSET product_price
+                            call print_string
+                            pop si
+                            mov ax, [si+2]
+                            mov selected_product_price, ax
+                            call display_number
+                            call next_line
+
+
+
+
+      select_quantity_input:
+                            mov  si, OFFSET select_quantity
+                            call print_string
+                            mov  cx,3
+                            mov  dl,0
+                            mov  al,0
+                            mov  bl,10
+     l4:
+                            mov  ah, 01h
+                            int  21h
+                            cmp  al, 0Dh                        ; if pressed enter, then exit input
+                            je   exit_input_quantity
+                            cmp  al, '0'
+                            jl   invalid_character_quantity
+                            cmp  al, '9'
+                            jg   invalid_character_quantity
+                            mov  bh, al
+                            sub  bh, 30h
+                            mov  al, dl
+                            mul  bl
+                            add  al, bh
+                            mov  dl, al                         ; input stored in dl as decimal value
+                            LOOP l4
+                            jmp  exit_input_quantity
+     invalid_character_quantity:                                    ; Restart input if the caracter is invalid
+                            mov  si, OFFSET invalid_input
+                            call next_line
+                            call print_string
+                            call next_line
+                            jmp  select_product_input
+     exit_input_quantity:
+                        mov dh,0
+                        mov ax, dx
+                        mov quantity, ax
+      calculate_total:
+                        mov si, offset product_msg
+                        call print_string 
+                        mov si, [selected_product_name]
+                        call print_string
+                        
+                        mov si, offset quantity_msg
+                        call print_string
+                        mov ax, quantity
+                        call display_number
+                        call next_line
+                        
+                        mov si, offset total_price_msg
+                        call print_string
+                        mov ax, selected_product_price
+                        mov bx, [quantity]
+                        mul bx
+                        call display_number
+                        
+                        
+
+
+                        
+                            
 
 
      ex:
