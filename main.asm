@@ -1,6 +1,8 @@
 .model small
 .stack 100h
 
+MAX_BILL_ITEMS EQU 20
+
 .data
      intro           DB '-------WELLCOME to SUPER SHOP-------$'
      instructions    DB 'Select categories to view product$'
@@ -15,6 +17,13 @@
      total_price_msg DB 'Total Price - $'
      exit_msg DB '. Exit$'
      back_msg DB '. Go Back$'
+     generate_bill_msg DB '. Generate Bill <-------$'
+       bill_heading_msg DB '---------YOUR BILL---------$'
+       bill_separator_msg DB '------------------------------$'
+       bill_empty_msg DB 'No items selected.$'
+       bill_item_total_msg DB '|| Item Total - $'
+       bill_grand_total_msg DB 'Grand Total - $'
+     
      
      cat1            DB 'SNACKS$'
      cat2            DB 'VEGETABLES$'
@@ -44,6 +53,10 @@
      num_of_products DB 3
 
      total_spend DW 0
+       bill_item_count DW 0
+       bill_product_names DW MAX_BILL_ITEMS DUP(0)
+       bill_quantities DW MAX_BILL_ITEMS DUP(0)
+       bill_line_totals DW MAX_BILL_ITEMS DUP(0)
      selected_category DB ?
      selected_product DB ?
      selected_product_name DW ?
@@ -136,6 +149,13 @@ main proc
                            mov ch,0
                             mov   cl, [num_of_category]
                             call display_list
+                            mov al,[num_of_category]
+                            mov ah,0
+                            inc ax
+                            call display_number
+                            mov si, offset generate_bill_msg
+                            call print_string
+                            call next_line
 
 
 
@@ -155,9 +175,9 @@ main proc
 
                             cmp  al, '0'
                             jl   invalid_character_category
-                            jne  not_exit_category
+                            jne  skip_exit
                             jmp  exit_program
-     not_exit_category:
+     skip_exit:
                             cmp  al, '9'
                             jg   invalid_character_category
                             mov  bh, al
@@ -179,6 +199,11 @@ main proc
                             jl   invalid_character_category
                             cmp  dl, bl
                             jle  valid_category
+                            inc bl
+                            cmp dl, bl
+                            jne skip_generate_bill
+                            jmp generate_bill
+      skip_generate_bill:
                             mov  si, OFFSET invalid_input
                             call print_string
                             call next_line
@@ -375,7 +400,86 @@ main proc
                         mov ax, selected_product_price
                         mov bx, [quantity]
                         mul bx
+                        mov dx, ax
+                        mov bx, [bill_item_count]
+                        cmp bx, MAX_BILL_ITEMS
+                        jae skip_bill_store
+                        shl bx, 1
+                        mov si, [selected_product_name]
+                        mov [bill_product_names+bx], si
+                        mov ax, [quantity]
+                        mov [bill_quantities+bx], ax
+                        mov ax, dx
+                        mov [bill_line_totals+bx], ax
+                        add total_spend, ax
+                        inc word ptr [bill_item_count]
+     skip_bill_store:
+                        mov ax, dx
                         call display_number
+                        call next_line
+                        jmp start_program
+
+            generate_bill:
+
+                        mov si, offset bill_heading_msg
+                        call print_string
+                        call next_line
+                        mov si, offset bill_separator_msg
+                        call print_string
+                        call next_line
+                        mov ax, [bill_item_count]
+                        cmp ax, 0
+                        jne bill_items_available
+                        mov si, offset bill_empty_msg
+                        call print_string
+                        call next_line
+                        jmp exit_program
+
+     bill_items_available:
+                        mov cx, [bill_item_count]
+                        mov bx, 0
+     bill_loop:
+                        push bx
+                        mov ax, bx
+                        shr ax, 1
+                        inc ax
+                        call display_number
+                        pop bx
+                        mov ah, 02h
+                        mov dx, '.'
+                        int 21h
+                        mov ah, 02h
+                        mov dx, ' '
+                        int 21h
+                        mov si, offset product_msg
+                        call print_string
+                        mov si, [bill_product_names+bx]
+                        call print_string
+                        mov si, offset quantity_msg
+                        call print_string
+                        mov ax, [bill_quantities+bx]
+                        push bx
+                        call display_number
+                        pop bx
+                        mov si, offset bill_item_total_msg
+                        call print_string
+                        mov ax, [bill_line_totals+bx]
+                        push bx
+                        call display_number
+                        pop bx
+                        call next_line
+                        add bx, 2
+                        loop bill_loop
+                        mov si, offset bill_separator_msg
+                        call print_string
+                        call next_line
+                        mov si, offset bill_grand_total_msg
+                        call print_string
+                        mov ax, total_spend
+                        call display_number
+                        call next_line
+                        jmp exit_program
+
                         
                         
 
@@ -384,7 +488,7 @@ main proc
 
 
 
-                                   exit_program:
+                     exit_program:
                             MOV  AH, 4Ch
                             INT  21h
 main endp
