@@ -2,38 +2,40 @@
 .stack 100h
 
 .data
-     intro           DB      '-------WELLCOME to SUPER SHOP-------$'
-     instructions    DB      'Select categories to view product$'
-     selected        DB      'Selected : $'
-     select_category DB      'Select Category: $'
-     invalid_input   DB      'Invalid Input || Try again!!$'
-     cat1            DB      'SNACKS$'
-     cat2            DB      'VEGETABLES$'
-     cat3            DB      'FRUITES$'
-     catPtrs         DW      OFFSET cat1, OFFSET cat2, OFFSET cat3
-     num_of_category DB      3
-                         ; Product name labels (dollar-terminated)
-     fruit1_name DB 'Mango$'
-     fruit2_name DB 'Banana$'
-     fruit3_name DB 'Lichi$'
+     intro           DB '-------WELLCOME to SUPER SHOP-------$'
+     instructions    DB 'Select categories to view product$'
+     selected        DB 'Selected : $'
+     select_category DB 'Select Category: $'
+     invalid_input   DB 'Invalid Input || Try again!!$'
+     cat1            DB 'SNACKS$'
+     cat2            DB 'VEGETABLES$'
+     cat3            DB 'FRUITES$'
+     catPtrs         DW OFFSET cat1, OFFSET cat2, OFFSET cat3
+     num_of_category DB 3
+     ; Product name labels
+     fruit1_name     DB 'Mango$'
+     fruit2_name     DB 'Banana$'
+     fruit3_name     DB 'Lichi$'
 
-     veg1_name   DB 'Salad$'
-     veg2_name   DB 'Lemon$'
-     veg3_name   DB 'Broccoli$'
+     veg1_name       DB 'Salad$'
+     veg2_name       DB 'Lemon$'
+     veg3_name       DB 'Broccoli$'
 
-     snack1_name DB 'Dark Chocolate$'
-     snack2_name DB 'Cold Drink$'
-     snack3_name DB 'French Fry$'
+     snack1_name     DB 'Dark Chocolate$'
+     snack2_name     DB 'Cold Drink$'
+     snack3_name     DB 'French Fry$'
 
      ; Product tables: pairs of WORDs: OFFSET name, price
-     fruit_table DW OFFSET fruit1_name, 100, OFFSET fruit2_name, 200, OFFSET fruit3_name, 350
-     veg_table   DW OFFSET veg1_name, 250, OFFSET veg2_name, 200, OFFSET veg3_name, 350
-     snack_table DW OFFSET snack1_name, 550, OFFSET snack2_name, 200, OFFSET snack3_name, 350
+     fruit_table     DW OFFSET fruit1_name, 100, OFFSET fruit2_name, 200, OFFSET fruit3_name, 350
+     veg_table       DW OFFSET veg1_name, 250, OFFSET veg2_name, 200, OFFSET veg3_name, 350
+     snack_table     DW OFFSET snack1_name, 550, OFFSET snack2_name, 200, OFFSET snack3_name, 350
 
      ; Map categories to their product tables
-     product_list DW OFFSET snack_table, OFFSET veg_table, OFFSET fruit_table
+     product_list    DW OFFSET snack_table, OFFSET veg_table, OFFSET fruit_table
      num_of_products DB 3
 
+
+     product_price   DB ' - Price: $'
 
 
 .code
@@ -88,7 +90,8 @@ main proc
                             call next_line
                             ; Display the categories numbered
                             mov  di, OFFSET catPtrs
-                            mov  cl, [num_of_category]
+                           mov ch,0
+                            mov   cl, [num_of_category]
                             call display_list
 
      ; take input
@@ -144,40 +147,65 @@ main proc
                             add  si, ax
                             mov  si, [si]
                             call print_string
+                            call next_line
+                            mov  bh,2
+                            mov  al, bl
+                            mul  bh
+
+                            mov  ah,0
+                            mov  si, offset product_list
+                            add  si, ax
+                            mov  di, [si]
+                           mov ch,0
+                            mov   cl, [num_of_products]
+                            mov  bh, 1
+     l3:
+                            mov  ah, 02h
+                            mov  dl, bh
+                            add  dl, '0'
+                            int  21h
+                            mov  ah, 02h
+                            mov  dl, '.'
+                            int  21h
+                            mov  ah, 02h
+                            mov  dl, ' '
+                            int  21h
+                            inc  bh
+
+                            mov  si, [di]
+                            call print_string
+
+                            ; Print " - Price: "
+                            mov  si, OFFSET product_price
+                            call print_string
+
+                            add  di,2
+                            mov  bx, [di]
+                            mov  ax, bx
+                            MOV BX, 10             ; Set divisor to 10
+                            push cx             ; Save outer loop counter
+                            mov cx,0
+     CONVERT_LOOP:
+                            MOV  DX, 0                          ; Clear DX before 16-bit division
+                            DIV  BX                             ; Divide DX:AX by 10. AX = Quotient, DX = Remainder
+                            PUSH DX                             ; Push the remainder (digit) onto the stack
+                            INC  CX                             ; Increment our digit counter
+                            CMP  AX, 0                          ; Check if quotient is 0
+                            JNE  CONVERT_LOOP                   ; If not zero, continue dividing
+
+     DISPLAY_LOOP:
+                            POP  DX                             ; Pop the last pushed digit into DX
+                            ADD  DL, '0'                        ; Convert raw number (0-9) to ASCII ('0'-'9')
+                            MOV  AH, 02H                        ; DOS function to display a character
+                            INT  21H                            ; Call DOS interrupt
+                            LOOP DISPLAY_LOOP                   ; Decrement CX and repeat until all digits print
+                            pop  cx             ; Restore outer loop counter
+
+
 
                             call next_line
-                         ;    mov ah, 02h
-                         ;    mov dl, bl
-                         ;    add dl, '0'
-                         ;    int 21h
-                         mov bh,2
-                         mov al, bl
-                         mul bh
-                         
-                         mov ah,0
-                         mov si, offset product_list
-                         add si, ax
-                         mov di, [si]
-                         mov cl, [num_of_products]
-                         mov bh, 1
-                         l3:
-                         mov ah, 02h
-                         mov dl, bh
-                         add dl, '0'
-                         int 21h
-                         mov ah, 02h
-                         mov dl, '.'
-                         int 21h
-                         mov ah, 02h
-                         mov dl, ' '
-                         int 21h
-                         inc bh
-
-                         mov si, [di]
-                         call print_string
-                         call next_line
-                         add di, 4
-                         LOOP l3
+                            add  di, 2
+                            LOOP l3
 
 
      ex:
