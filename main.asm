@@ -79,6 +79,27 @@ display_list proc                                               ; Required: list
                             ret
                             endp display_list
 
+display_number proc
+                            push cx                             ; Save CX as it's used for loop counting
+                            mov  bx, 10                          ; Set divisor to 10
+                            mov  cx, 0                           ; Digit counter
+                     CONVERT_LOOP:
+                            mov  dx, 0                           ; Clear DX for 16-bit division
+                            div  bx                             ; AX = quotient, DX = remainder
+                            push dx                              ; Save remainder
+                            inc  cx                             ; Increment digit count
+                            cmp  ax, 0                           ; Check if quotient is 0
+                            jne  CONVERT_LOOP                    ; If not zero, continue dividing
+                     DISPLAY_LOOP:
+                            pop  dx                              ; Get digit
+                            add  dl, '0'                         ; Convert to ASCII
+                            mov  ah, 02h                         ; DOS function to display a character
+                            int  21h                            ; Call DOS interrupt
+                            loop DISPLAY_LOOP                    ; Decrement CX and repeat
+                            pop  cx                              ; Restore CX
+                            ret
+                            endp display_number
+
 main proc
                             mov  AX, @data
                             mov  ds, ax
@@ -180,26 +201,8 @@ main proc
                             call print_string
 
                             add  di,2
-                            mov  bx, [di]
-                            mov  ax, bx
-                            MOV BX, 10             ; Set divisor to 10
-                            push cx             ; Save outer loop counter
-                            mov cx,0
-     CONVERT_LOOP:
-                            MOV  DX, 0                          ; Clear DX before 16-bit division
-                            DIV  BX                             ; Divide DX:AX by 10. AX = Quotient, DX = Remainder
-                            PUSH DX                             ; Push the remainder (digit) onto the stack
-                            INC  CX                             ; Increment our digit counter
-                            CMP  AX, 0                          ; Check if quotient is 0
-                            JNE  CONVERT_LOOP                   ; If not zero, continue dividing
-
-     DISPLAY_LOOP:
-                            POP  DX                             ; Pop the last pushed digit into DX
-                            ADD  DL, '0'                        ; Convert raw number (0-9) to ASCII ('0'-'9')
-                            MOV  AH, 02H                        ; DOS function to display a character
-                            INT  21H                            ; Call DOS interrupt
-                            LOOP DISPLAY_LOOP                   ; Decrement CX and repeat until all digits print
-                            pop  cx             ; Restore outer loop counter
+                            mov  ax, [di]
+                            call display_number
 
 
 
