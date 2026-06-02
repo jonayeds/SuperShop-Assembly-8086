@@ -13,6 +13,8 @@
      invalid_input   DB 'Invalid Input || Try again!!$'
      product_price   DB ' - Price: $'
      total_price_msg DB 'Total Price - $'
+     exit_msg DB '. Exit$'
+     back_msg DB '. Go Back$'
      
      cat1            DB 'SNACKS$'
      cat2            DB 'VEGETABLES$'
@@ -115,6 +117,7 @@ display_number proc
                             endp display_number
 
 main proc
+   start_program:
                             mov  AX, @data
                             mov  ds, ax
                             MOV  si, OFFSET intro
@@ -124,10 +127,17 @@ main proc
                             call print_string
                             call next_line
                             ; Display the categories numbered
+                            mov ax,0
+                            call display_number
+                            mov si, offset exit_msg
+                            call print_string
+                            call next_line
                             mov  di, OFFSET catPtrs
                            mov ch,0
                             mov   cl, [num_of_category]
                             call display_list
+
+
 
      ; take input
      select_category_input:
@@ -142,8 +152,12 @@ main proc
                             int  21h
                             cmp  al, 0Dh                        ; if pressed enter, then exit input
                             je   exit_input_category
+
                             cmp  al, '0'
                             jl   invalid_character_category
+                            jne  not_exit_category
+                            jmp  exit_program
+     not_exit_category:
                             cmp  al, '9'
                             jg   invalid_character_category
                             mov  bh, al
@@ -226,6 +240,13 @@ main proc
                             call next_line
                             add  di, 2
                             LOOP display_products
+                            mov ah,0
+                            mov al,[num_of_products]
+                            inc al
+                            call display_number
+                            mov si, offset back_msg
+                            call print_string
+                            call next_line
 
                             ; take input
      select_product_input:
@@ -263,6 +284,11 @@ main proc
                             jl   invalid_character_product
                             cmp  dl, bl
                             jle  valid_product
+                            add bl,1
+                            cmp dl, bl
+                            jne skip_go_back
+                            jmp start_program
+                  skip_go_back:
                             mov  si, OFFSET invalid_input
                             call print_string
                             call next_line
@@ -355,10 +381,10 @@ main proc
 
 
                         
-                            
 
 
-     ex:
+
+                                   exit_program:
                             MOV  AH, 4Ch
                             INT  21h
 main endp
