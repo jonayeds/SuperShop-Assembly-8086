@@ -18,6 +18,9 @@ MAX_BILL_ITEMS EQU 20
      exit_msg DB '. Exit$'
      back_msg DB '. Go Back$'
      generate_bill_msg DB '. Generate Bill <-------$'
+     main_menu_buy_msg DB '1. Buy Products$'
+     main_menu_bill_msg DB '2. Generate Bill$'
+     main_menu_exit_msg DB '3. Exit$'
        bill_heading_msg DB '---------YOUR BILL---------$'
        bill_separator_msg DB '------------------------------$'
        bill_empty_msg DB 'No items selected.$'
@@ -65,7 +68,7 @@ MAX_BILL_ITEMS EQU 20
 
      required_spending_for_discount DW 1000
      discount_threshold DW 200
-       discount_percentage DB 5
+       discount_percentage DB 10
      discount_msg DB '* Get 20% Discount for spending 1000 or More. Up to 200$'
      discounted DW 0
      discount_amount_msg DB 'Discounted - $'
@@ -149,10 +152,43 @@ main proc
                             mov  si, offset discount_msg
                             call print_string
                             call next_line
-                            ; Display the categories numbered
-                            mov ax,0
+                            mov  si, offset main_menu_buy_msg
+                            call print_string
+                            call next_line
+                            mov  si, offset main_menu_bill_msg
+                            call print_string
+                            call next_line
+                            mov  si, offset main_menu_exit_msg
+                            call print_string
+                            call next_line
+
+     main_menu_input:
+                            mov  ah, 01h
+                            int  21h
+                            cmp  al, '1'
+                            jne  main_menu_check_bill
+                            jmp  select_category_input
+     main_menu_check_bill:
+                            cmp  al, '2'
+                            jne  main_menu_check_exit
+                            jmp  generate_bill
+     main_menu_check_exit:
+                            cmp  al, '3'
+                            jne  main_menu_invalid
+                            jmp  exit_program
+     main_menu_invalid:
+                            mov  si, OFFSET invalid_input
+                            call print_string
+                            call next_line
+                            jmp  start_program
+
+     select_category_input:
+                            mov  si, OFFSET select_category
+                            call print_string
+                            call next_line
+                            mov  ax, 0
                             call display_number
-                            mov si, offset exit_msg
+                            mov  si, offset back_msg
                             call print_string
                             call next_line
                             mov  di, OFFSET catPtrs
@@ -166,13 +202,6 @@ main proc
                             mov si, offset generate_bill_msg
                             call print_string
                             call next_line
-
-
-
-     ; take input
-     select_category_input:
-                            mov  si, OFFSET select_category
-                            call print_string
                             mov  cx,3
                             mov  dl,0
                             mov  al,0
@@ -185,9 +214,9 @@ main proc
 
                             cmp  al, '0'
                             jl   invalid_character_category
-                            jne  skip_exit
-                            jmp  exit_program
-     skip_exit:
+                            jne  category_digit_check
+                            jmp  start_program
+     category_digit_check:
                             cmp  al, '9'
                             jg   invalid_character_category
                             mov  bh, al
@@ -211,13 +240,8 @@ main proc
                             jle  valid_category
                             inc bl
                             cmp dl, bl
-                            jne skip_generate_bill
+                            jne invalid_character_category
                             jmp generate_bill
-      skip_generate_bill:
-                            mov  si, OFFSET invalid_input
-                            call print_string
-                            call next_line
-                            jmp  select_category_input
 
      valid_category:
                             mov  bl, dl
@@ -228,7 +252,7 @@ main proc
                             dec  bl
                             mov  bh, 2
                             mov  al, bl
-                            mul  bh
+                            mul  bh 
                             mov  ah,0
                             add  si, ax
                             mov  si, [si]
@@ -388,8 +412,12 @@ main proc
                             call next_line
                             call print_string
                             call next_line
-                            jmp  select_product_input
+                jmp  select_quantity_input
      exit_input_quantity:
+              cmp dl, 0
+              jne quantity_continue
+              jmp start_program
+     quantity_continue:
                         mov dh,0
                         mov ax, dx
                         mov quantity, ax
@@ -443,7 +471,7 @@ main proc
                         mov si, offset bill_empty_msg
                         call print_string
                         call next_line
-                        jmp exit_program
+                        jmp start_program
 
      bill_items_available:
                         mov cx, [bill_item_count]
@@ -507,6 +535,7 @@ main proc
        assign_max_discount:
                      mov ax, [discount_threshold]
                      mov discounted, ax
+                     jmp skip_max_discount
        skip_max_discount:
                      mov si, offset discount_amount_msg
                      call print_string
@@ -521,6 +550,8 @@ main proc
                      mov ax, [total_spend]
                      sub ax, [discounted]
                      call display_number
+                     call next_line
+                     ; jmp start_program
                      
        
                      
