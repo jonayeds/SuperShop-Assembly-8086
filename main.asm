@@ -63,6 +63,13 @@ MAX_BILL_ITEMS EQU 20
      selected_product_price DW ?
      quantity DW 0
 
+     required_spending_for_discount DW 1000
+     discount_threshold DW 200
+       discount_percentage DB 5
+     discount_msg DB '* Get 20% Discount for spending 1000 or More. Up to 200$'
+     discounted DW 0
+     discount_amount_msg DB 'Discounted - $'
+     final_spending_msg DB 'Final Spending - $'
 
 
 
@@ -137,6 +144,9 @@ main proc
                             call print_string
                             call next_line
                             mov  si, offset instructions
+                            call print_string
+                            call next_line
+                            mov  si, offset discount_msg
                             call print_string
                             call next_line
                             ; Display the categories numbered
@@ -478,7 +488,46 @@ main proc
                         mov ax, total_spend
                         call display_number
                         call next_line
+                     mov bx, [required_spending_for_discount]
+                     mov ax, total_spend
+                     cmp ax, bx
+                     jge calculate_discount
                         jmp exit_program
+       calculate_discount:
+                     mov ax, [total_spend]
+                     mov dx,0
+                     mov bx, 0
+                     mov bl, [discount_percentage]
+                     div bx
+                     mov bx, [discount_threshold]
+                     cmp ax, bx
+                     jge assign_max_discount
+                     mov discounted, ax
+                     jmp skip_max_discount
+       assign_max_discount:
+                     mov ax, [discount_threshold]
+                     mov discounted, ax
+       skip_max_discount:
+                     mov si, offset discount_amount_msg
+                     call print_string
+                     mov ax, [discounted]
+                     call display_number
+                     call next_line
+                     mov si, offset bill_separator_msg
+                     call print_string
+                     call next_line
+                     mov si, offset final_spending_msg
+                     call print_string
+                     mov ax, [total_spend]
+                     sub ax, [discounted]
+                     call display_number
+                     
+       
+                     
+       
+                     
+
+                        
 
                         
                         
