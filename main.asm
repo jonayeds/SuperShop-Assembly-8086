@@ -48,30 +48,77 @@ MAX_BILL_ITEMS EQU 20
 
        cat1                           DB 'SNACKS$'
        cat2                           DB 'VEGETABLES$'
-       cat3                           DB 'FRUITES$'
-       catPtrs                        DW OFFSET cat1, OFFSET cat2, OFFSET cat3
-       num_of_category                DB 3
+       cat3                           DB 'FRUITS$'
+       cat4                           DB 'BEVERAGES$'
+       cat5                           DB 'DAIRY$'
+       catPtrs                        DW OFFSET cat1, OFFSET cat2, OFFSET cat3, OFFSET cat4, OFFSET cat5
+       num_of_category                DB 5
        ; Product name labels
-       fruit1_name                    DB 'Mango$'
-       fruit2_name                    DB 'Banana$'
-       fruit3_name                    DB 'Lichi$'
+       snack1_name                    DB 'Dark Chocolate$'
+       snack2_name                    DB 'Potato Chips$'
+       snack3_name                    DB 'French Fries$'
+       snack4_name                    DB 'Popcorn$'
+       snack5_name                    DB 'Nachos$'
+       snack6_name                    DB 'Biscuit Pack$'
+       snack7_name                    DB 'Wafer Roll$'
+       snack8_name                    DB 'Salted Peanuts$'
+       snack9_name                    DB 'Cheese Balls$'
+       snack10_name                   DB 'Energy Bar$'
 
        veg1_name                      DB 'Salad$'
        veg2_name                      DB 'Lemon$'
        veg3_name                      DB 'Broccoli$'
+       veg4_name                      DB 'Tomato$'
+       veg5_name                      DB 'Carrot$'
+       veg6_name                      DB 'Potato$'
+       veg7_name                      DB 'Onion$'
+       veg8_name                      DB 'Cucumber$'
+       veg9_name                      DB 'Capsicum$'
+       veg10_name                     DB 'Spinach$'
 
-       snack1_name                    DB 'Dark Chocolate$'
-       snack2_name                    DB 'Cold Drink$'
-       snack3_name                    DB 'French Fry$'
+       fruit1_name                    DB 'Mango$'
+       fruit2_name                    DB 'Banana$'
+       fruit3_name                    DB 'Lichi$'
+       fruit4_name                    DB 'Apple$'
+       fruit5_name                    DB 'Orange$'
+       fruit6_name                    DB 'Grapes$'
+       fruit7_name                    DB 'Pineapple$'
+       fruit8_name                    DB 'Papaya$'
+       fruit9_name                    DB 'Watermelon$'
+       fruit10_name                   DB 'Guava$'
+
+       beverage1_name                 DB 'Mineral Water$'
+       beverage2_name                 DB 'Orange Juice$'
+       beverage3_name                 DB 'Apple Juice$'
+       beverage4_name                 DB 'Milk Shake$'
+       beverage5_name                 DB 'Green Tea$'
+       beverage6_name                 DB 'Coffee$'
+       beverage7_name                 DB 'Black Tea$'
+       beverage8_name                 DB 'Lemonade$'
+       beverage9_name                 DB 'Soda$'
+       beverage10_name                DB 'Coconut Water$'
+
+       dairy1_name                    DB 'Fresh Milk$'
+       dairy2_name                    DB 'Yogurt$'
+       dairy3_name                    DB 'Cheddar Cheese$'
+       dairy4_name                    DB 'Butter$'
+       dairy5_name                    DB 'Paneer$'
+       dairy6_name                    DB 'Cream$'
+       dairy7_name                    DB 'Ice Cream$'
+       dairy8_name                    DB 'Ghee$'
+       dairy9_name                    DB 'Cottage Cheese$'
+       dairy10_name                   DB 'Flavored Milk$'
 
        ; Product tables: pairs of WORDs: OFFSET name, price
-       fruit_table                    DW OFFSET fruit1_name, 100, OFFSET fruit2_name, 200, OFFSET fruit3_name, 350
-       veg_table                      DW OFFSET veg1_name, 250, OFFSET veg2_name, 200, OFFSET veg3_name, 350
-       snack_table                    DW OFFSET snack1_name, 550, OFFSET snack2_name, 200, OFFSET snack3_name, 350
+       snack_table                    DW OFFSET snack1_name, 120, OFFSET snack2_name, 90, OFFSET snack3_name, 110, OFFSET snack4_name, 80, OFFSET snack5_name, 95, OFFSET snack6_name, 75, OFFSET snack7_name, 85, OFFSET snack8_name, 65, OFFSET snack9_name, 100, OFFSET snack10_name, 70
+       veg_table                      DW OFFSET veg1_name, 40, OFFSET veg2_name, 25, OFFSET veg3_name, 70, OFFSET veg4_name, 30, OFFSET veg5_name, 35, OFFSET veg6_name, 28, OFFSET veg7_name, 22, OFFSET veg8_name, 18, OFFSET veg9_name, 32, OFFSET veg10_name, 24
+       fruit_table                    DW OFFSET fruit1_name, 100, OFFSET fruit2_name, 45, OFFSET fruit3_name, 60, OFFSET fruit4_name, 110, OFFSET fruit5_name, 75, OFFSET fruit6_name, 90, OFFSET fruit7_name, 95, OFFSET fruit8_name, 85, OFFSET fruit9_name, 65, OFFSET fruit10_name, 55
+       beverage_table                 DW OFFSET beverage1_name, 20, OFFSET beverage2_name, 80, OFFSET beverage3_name, 85, OFFSET beverage4_name, 120, OFFSET beverage5_name, 60, OFFSET beverage6_name, 70, OFFSET beverage7_name, 55, OFFSET beverage8_name, 45, OFFSET beverage9_name, 30, OFFSET beverage10_name, 25
+       dairy_table                    DW OFFSET dairy1_name, 50, OFFSET dairy2_name, 40, OFFSET dairy3_name, 180, OFFSET dairy4_name, 70, OFFSET dairy5_name, 90, OFFSET dairy6_name, 120, OFFSET dairy7_name, 150, OFFSET dairy8_name, 100, OFFSET dairy9_name, 110, OFFSET dairy10_name, 65
 
        ; Map categories to their product tables
-       product_list                   DW OFFSET snack_table, OFFSET veg_table, OFFSET fruit_table
-       num_of_products                DB 3
+       product_list                   DW OFFSET snack_table, OFFSET veg_table, OFFSET fruit_table, OFFSET beverage_table, OFFSET dairy_table
+       num_of_products                DB 10
 
        total_spend                    DW 0
        bill_item_count                DW 0
@@ -87,7 +134,7 @@ MAX_BILL_ITEMS EQU 20
        required_spending_for_discount DW 1000
        discount_threshold             DW 200
        discount_percentage            DB 10
-       discount_msg                   DB '* Get 20% Discount for spending 1000 or More. Up to 200$'
+       discount_msg                   DB '* Get 10% Discount for spending 1000 or More. Up to 200$'
        discounted                     DW 0
        discount_amount_msg            DB 'Discounted - $'
        final_spending_msg             DB 'Final Spending - $'
@@ -117,10 +164,11 @@ display_list proc                                                               
                                         mov  bl, 1
        l1:
                                         ; print number and separator
-                                        mov  dl, bl
-                                        add  dl, '0'
-                                        mov  ah, 02h
-                                        int  21h
+                                        push bx
+                                        mov  al, bl
+                                        mov ah,0
+                                        call display_number
+                                        pop  bx
                                         mov  dl, '.'
                                         mov  ah, 02h
                                         int  21h
@@ -409,10 +457,11 @@ main proc
                                         mov  cl, [num_of_products]
                                         mov  bh, 1
        display_products:
-                                        mov  ah, 02h
-                                        mov  dl, bh
-                                        add  dl, '0'
-                                        int  21h
+                                        push bx
+                                        mov  al, bh
+                                        mov ah,0
+                                        call display_number
+                                        pop  bx
                                         mov  ah, 02h
                                         mov  dl, '.'
                                         int  21h
@@ -477,7 +526,7 @@ main proc
                                         call next_line
                                         jmp  select_product_input
        exit_input_product:
-                                        mov  bl, [num_of_category]
+                                        mov  bl, [num_of_products]
                                         cmp  dl, 1
                                         jl   invalid_character_product
                                         cmp  dl, bl
@@ -664,6 +713,7 @@ main proc
                                         jge  calculate_discount
                                         jmp  exit_program
        calculate_discount:
+                                        mov  discounted, 0
                                         mov  ax, [total_spend]
                                         mov  bx, 0
                                         mov  bl, [discount_percentage]

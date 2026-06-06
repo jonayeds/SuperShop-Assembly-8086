@@ -6,7 +6,8 @@ A comprehensive Point-of-Sale (POS) simulation developed in **8086 Assembly Lang
 
 ### 1.  Product Browsing & Purchasing
 Users can navigate through multiple product categories and add items to their cart with specified quantities.
-- **Categories**: Snacks, Vegetables, and Fruits.
+- **Categories**: Snacks, Vegetables, Fruits, Beverages, and Dairy.
+- **Catalog Size**: 5 categories with 10 products in each category.
 - **Real-time Calculation**: Automatically calculates line totals based on product price and quantity.
 - **Cart Management**: Keeps track of up to 20 unique items.
 
